@@ -2,9 +2,14 @@ const path = require('path');
 const babiliPlugin = require('babili-webpack-plugin');
 const extractTextPlugin = require('extract-text-webpack-plugin');
 const optimieCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const webpack = require('webpack');
 
 let plugins = [
-    new extractTextPlugin('styles.css')
+    new extractTextPlugin('styles.css'),
+    new webpack.ProvidePlugin({
+        '$':'jquery/dist/jquery.js',
+        'jQuery':'jquery/dist/jquery.js'
+    })
 ];
 
 
