@@ -3,17 +3,35 @@ const babiliPlugin = require('babili-webpack-plugin');
 const extractTextPlugin = require('extract-text-webpack-plugin');
 const optimieCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const webpack = require('webpack');
+const htmlWebpackPlugin = require('html-webpack-plugin');
 
 let plugins = [
+    new htmlWebpackPlugin({
+        hash: true,
+        minify: {
+            html5: true,
+            collapseWhitespace: true,
+            removeComments: true
+        },
+        filename: 'index.html',
+        template: __dirname + '/main.html'
+    }),
     new extractTextPlugin('styles.css'),
     new webpack.ProvidePlugin({
-        '$':'jquery/dist/jquery.js',
-        'jQuery':'jquery/dist/jquery.js'
+        '$': 'jquery/dist/jquery.js',
+        'jQuery': 'jquery/dist/jquery.js'
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor',
+        filename: 'vendor.bundle.js'
     })
 ];
 
+let SERVICE_URL = JSON.stringify('http://localhost:3000');
 
 if (process.env.NODE_ENV == 'production') {
+    SERVICE_URL = JSON.stringify('http://enderecoApi');
+    plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     plugins.push(new babiliPlugin());
     plugins.push(new optimieCSSAssetsPlugin({
         cssProcessor: require('cssnano'),
@@ -26,12 +44,18 @@ if (process.env.NODE_ENV == 'production') {
     }));
 }
 
+plugins.push(new webpack.DefinePlugin({
+    SERVICE_URL
+}));
+
 module.exports = {
-    entry: './app-src/app.js',
+    entry: {
+        app: './app-src/app.js',
+        vendor: ['jquery', 'bootstrap', 'reflect-metadata']
+    },
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist'),
-        publicPath: 'dist'
+        path: path.resolve(__dirname, 'dist')
     },
     module: {
         rules: [
